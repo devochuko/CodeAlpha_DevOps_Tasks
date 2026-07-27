@@ -1,0 +1,50 @@
+trigger:
+  - main
+
+resources:
+  - repo: self
+
+variables:
+  # Update these variables with your actual Azure resource names
+  azureSubscriptionServiceConnection: 'azure-service-connection' # Name of your Azure DevOps Service Connection
+  appName: 'codealpha-app-12670'                                  # Your Web App name
+  azureContainerRegistry: 'codealphaacr12345.azurecr.io'         # Your ACR Login Server
+  imageRepository: 'codealpha-web-app'
+  dockerfilePath: '$(Build.SourcesDirectory)/Task1_Azure_CICD/app/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+  - stage: Build
+    displayName: Build and Push Image
+    jobs:
+      - job: Build
+        displayName: Build
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: Docker@2
+            displayName: Build and push image to ACR
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: $(azureSubscriptionServiceConnection)
+              tags: |
+                $(tag)
+                latest
+
+  - stage: Deploy
+    displayName: Deploy to Azure App Service
+    dependsOn: Build
+    jobs:
+      - job: Deploy
+        displayName: Deploy
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: AzureWebAppContainer@1
+            displayName: 'Azure Web App Container Deploy'
+            inputs:
+              azureSubscription: $(azureSubscriptionServiceConnection)
+              appName: $(appName)
+              containers: '$(azureContainerRegistry)/$(imageRepository):$(tag)'
