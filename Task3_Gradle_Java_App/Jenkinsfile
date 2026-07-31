@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'task3-java-app'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -22,19 +18,12 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Verify Executable JAR') {
             steps {
                 dir('Task3_Gradle_Java_App') {
-                    echo 'Building Docker Image...'
-                    sh 'docker build -t $IMAGE_NAME .'
+                    echo 'Executing compiled Fat JAR...'
+                    sh 'java -jar build/libs/codealpha-java-gradle-app.jar'
                 }
-            }
-        }
-
-        stage('Deploy / Run Container') {
-            steps {
-                echo 'Testing Application Execution inside Container...'
-                sh 'docker run --rm $IMAGE_NAME'
             }
         }
     }
