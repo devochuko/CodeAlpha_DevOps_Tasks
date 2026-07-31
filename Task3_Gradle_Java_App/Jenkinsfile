@@ -14,15 +14,20 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                echo 'Building Java App with Gradle...'
-                sh 'gradle clean build'
+                dir('Task3_Gradle_Java_App') {
+                    echo 'Building Java App with Gradle Wrapper...'
+                    sh 'chmod +x gradlew'
+                    sh './gradlew clean build'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker Image...'
-                sh 'docker build -t $IMAGE_NAME .'
+                dir('Task3_Gradle_Java_App') {
+                    echo 'Building Docker Image...'
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
             }
         }
 
