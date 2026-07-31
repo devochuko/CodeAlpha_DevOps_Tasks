@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'task3-java-app'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                echo 'Building Java App with Gradle...'
+                sh 'gradle clean build'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker Image...'
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Deploy / Run Container') {
+            steps {
+                echo 'Testing Application Execution inside Container...'
+                sh 'docker run --rm $IMAGE_NAME'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution complete.'
+        }
+        success {
+            echo 'Task 3 CI/CD Pipeline Succeeded!'
+        }
+    }
+}
